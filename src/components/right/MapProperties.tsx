@@ -82,6 +82,28 @@ const SHAPE_CATEGORIES = [
   }
 ];
 
+const AccordionSection = ({ title, children, actions, isExpanded, onToggle }: { title: string, children: React.ReactNode, actions?: React.ReactNode, isExpanded: boolean, onToggle: () => void }) => {
+  return (
+    <div className="flex flex-col border-b border-slate-200 last:border-0 bg-[#f3f4f6]">
+      <div 
+        className="flex items-center justify-between px-2 py-2 cursor-pointer hover:bg-slate-200 transition-colors"
+        onClick={onToggle}
+      >
+        <div className="flex items-center gap-1.5 text-slate-800">
+          {isExpanded ? <ChevronDown size={14} className="text-slate-600" /> : <ChevronRight size={14} className="text-slate-600" />}
+          <span className="text-xs font-semibold select-none">{title}</span>
+        </div>
+        {actions && <div onClick={e => e.stopPropagation()}>{actions}</div>}
+      </div>
+      {isExpanded && (
+        <div className="px-3 pb-3 bg-[#f3f4f6]">
+          {children}
+        </div>
+      )}
+    </div>
+  );
+};
+
 interface MapPropertiesPanelProps {
   mapData: MindMapData;
   updateMapState: (newData: MindMapData) => void;
@@ -125,29 +147,6 @@ export default function MapPropertiesPanel({
     e.dataTransfer.effectAllowed = 'copy';
   };
 
-  const AccordionSection = ({ title, children, actions }: { title: string, children: React.ReactNode, actions?: React.ReactNode }) => {
-    const isExpanded = expanded[title];
-    return (
-      <div className="flex flex-col border-b border-slate-200 last:border-0 bg-[#f3f4f6]">
-        <div 
-          className="flex items-center justify-between px-2 py-2 cursor-pointer hover:bg-slate-200 transition-colors"
-          onClick={() => toggle(title)}
-        >
-          <div className="flex items-center gap-1.5 text-slate-800">
-            {isExpanded ? <ChevronDown size={14} className="text-slate-600" /> : <ChevronRight size={14} className="text-slate-600" />}
-            <span className="text-xs font-semibold select-none">{title}</span>
-          </div>
-          {actions && <div onClick={e => e.stopPropagation()} className="flex items-center gap-1 text-slate-500">{actions}</div>}
-        </div>
-        {isExpanded && (
-          <div className="px-2 pb-3 bg-[#f3f4f6]">
-            {children}
-          </div>
-        )}
-      </div>
-    );
-  };
-
   // Helper to render the mini SVG
   const renderMiniShape = (type: NodeShape) => {
     if (EMOJI_SHAPES[type as string]) {
@@ -182,18 +181,19 @@ export default function MapPropertiesPanel({
   return (
     <div id="map_properties_panel" className="flex flex-col select-none bg-[#f3f4f6] h-full overflow-y-auto relative pb-8">
       
-      {/* Absolute Close Button overlaying the top */}
-      {onClose && (
-        <div className="absolute top-2 right-2 z-10">
+      {/* Header */}
+      <div className="flex items-center justify-between px-3 py-2 border-b border-slate-200 bg-white shrink-0 shadow-sm z-20 sticky top-0">
+        <span className="font-bold text-sm text-slate-700">Map Objects</span>
+        {onClose && (
           <button 
             onClick={onClose}
-            className="p-1.5 hover:bg-slate-200 text-slate-400 hover:text-slate-700 rounded-md transition-colors"
+            className="p-1.5 hover:bg-slate-100 text-slate-400 hover:text-slate-700 rounded-md transition-colors"
             title="Close panel"
           >
             <X size={16} />
           </button>
-        </div>
-      )}
+        )}
+      </div>
 
       {/* Search Bar mimic */}
       <div className="p-3 bg-[#f3f4f6] pb-2 mt-2">
@@ -213,14 +213,8 @@ export default function MapPropertiesPanel({
         {/* Scratchpad (Empty mockup) */}
         <AccordionSection 
           title="Scratchpad" 
-          actions={
-            <>
-              <HelpCircle size={13} className="hover:text-slate-800 cursor-pointer" />
-              <Plus size={13} className="hover:text-slate-800 cursor-pointer" />
-              <Edit2 size={13} className="hover:text-slate-800 cursor-pointer" />
-              <X size={13} className="hover:text-slate-800 cursor-pointer" />
-            </>
-          }
+          isExpanded={expanded['Scratchpad']}
+          onToggle={() => toggle('Scratchpad')}
         >
           <div className="border border-dashed border-slate-400 rounded-md py-3 text-center text-slate-400 text-xs mt-1">
             Drag elements here
@@ -230,7 +224,7 @@ export default function MapPropertiesPanel({
         {/* Dynamic Shape Categories */}
         {SHAPE_CATEGORIES.map(cat => (
           <React.Fragment key={cat.name}>
-            <AccordionSection title={cat.name}>
+            <AccordionSection title={cat.name} isExpanded={expanded[cat.name]} onToggle={() => toggle(cat.name)}>
               <div className="grid grid-cols-5 gap-1 pt-1">
                 {cat.shapes.map((s) => (
                   <div 
@@ -248,14 +242,14 @@ export default function MapPropertiesPanel({
           </React.Fragment>
         ))}
 
-        <div className="flex justify-center p-3">
+        {/* <div className="flex justify-center p-3">
           <button className="bg-[#dbeafe] hover:bg-[#bfdbfe] text-[#1e3a8a] font-bold py-2 px-6 rounded-md flex items-center justify-center gap-2 text-xs transition-colors w-full">
             <Plus size={14} className="stroke-[3]" /> More Shapes
           </button>
-        </div>
+        </div> */}
 
         {/* Global Tools */}
-        <AccordionSection title="Global Actions">
+        <AccordionSection title="Global Actions" isExpanded={expanded['Global Actions']} onToggle={() => toggle('Global Actions')}>
           <div className="flex flex-col gap-1.5 pt-1">
             <div className="flex items-center gap-1.5">
               <button
@@ -286,7 +280,7 @@ export default function MapPropertiesPanel({
         </AccordionSection>
 
         {/* Layout Direction */}
-        <AccordionSection title="Map Layout">
+        <AccordionSection title="Map Layout" isExpanded={expanded['Map Layout']} onToggle={() => toggle('Map Layout')}>
           <div className="grid grid-cols-2 gap-1.5 pt-1">
             {[
               { id: 'balanced', label: 'Balanced' },
@@ -327,7 +321,7 @@ export default function MapPropertiesPanel({
         </AccordionSection>
 
         {/* Export / Save */}
-        <AccordionSection title="Export">
+        <AccordionSection title="Export" isExpanded={expanded['Export']} onToggle={() => toggle('Export')}>
           <div className="flex flex-col gap-1.5 pt-1 pb-4">
             <button 
               onClick={onExportJson}

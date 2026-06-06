@@ -1,24 +1,12 @@
-- Follow this:
- ADD these node
- - docs -> node
- - pdf -> node
- - phone -> node 
- - car -> node 
- - tv -> node
- - computer -> node 
- - laptop -> node
-
-remove text from horizontal line w dont need the line have text.  
+Follow:
+ - When hover on the nodes, a small knob appears subtle in the center we drag and link the nodes, we can link our nodes just from the nodes by know dragging cursor from that knob.
 
 
-The RightProperties -> must have a toggle button a close button the very top  above the input. 
+ - we hover on the link line the must higlight the border of connected nodes. 
+ --
 
 
-Important:
- The nodes must become resize with cursor we select and resize it very smooth. 
+ The right sidebar and left properties must have the same header and close method... please follow the instruction
 
-
- Follow all these things
-
-
- DO not make implementation plan go ahead and do this
+ The user node by default is supper ugly
+ improve the ui of the nodes

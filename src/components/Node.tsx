@@ -163,8 +163,8 @@ export default React.memo(function Node({
       style={{
         left: pos.x,
         top: pos.y,
-        width: displayWidth ?? (usesSvgBackground || clipPath || isEmojiShape ? '180px' : '155px'),
-        height: displayHeight ?? undefined,
+        width: displayWidth ?? (isEmojiShape ? 80 : 155),
+        height: displayHeight ?? (isEmojiShape ? 80 : 40),
         backgroundColor: clipPath || usesSvgBackground || isEmojiShape ? 'transparent' : finalBgColor,
         borderColor: clipPath || usesSvgBackground || isEmojiShape ? 'transparent' : finalBorderColor,
         color: text,
@@ -267,7 +267,10 @@ export default React.memo(function Node({
 
       {/* Emoji Background Provider */}
       {isEmojiShape && (
-        <div className="absolute inset-0 flex items-center justify-center text-[5rem] pointer-events-none opacity-90 drop-shadow-md select-none">
+        <div 
+          className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-90 drop-shadow-md select-none"
+          style={{ fontSize: displayWidth ? `${Math.min(displayWidth as number, (displayHeight as number) ?? (displayWidth as number)) * 0.7}px` : '5rem' }}
+        >
           {EMOJI_SHAPES[shape]}
         </div>
       )}
@@ -298,19 +301,19 @@ export default React.memo(function Node({
           autoFocus
           onClick={(e) => e.stopPropagation()}
           onMouseDown={(e) => e.stopPropagation()}
-          className="w-full bg-white text-slate-800 text-xs px-1 outline-none text-center font-semibold rounded"
+          className="absolute top-full mt-1.5 w-[150%] left-1/2 -translate-x-1/2 bg-white text-slate-800 text-[10px] px-1 py-0.5 outline-none text-center font-semibold rounded shadow-sm border border-slate-300 z-50"
         />
       ) : (
-        <div className={`flex flex-col ${isBlock ? 'items-start text-left w-full h-full' : 'items-center text-center'} gap-0.5 leading-normal`}>
+        <div className={`absolute top-full mt-1.5 w-[200%] left-1/2 -translate-x-1/2 flex flex-col ${isBlock ? 'items-start text-left' : 'items-center text-center'} gap-0.5 leading-normal pointer-events-none z-40`}>
           {/* Container Frame Title Banner tag */}
           {isBlock && (
-            <div className="text-[9px] uppercase tracking-wider font-extrabold text-pink-700 bg-pink-100 border border-pink-200 px-1.5 py-0.5 rounded mb-2.5 select-none pointer-events-none">
+            <div className="text-[9px] uppercase tracking-wider font-extrabold text-pink-700 bg-pink-100 border border-pink-200 px-1.5 py-0.5 rounded mb-2.5 select-none">
               📦 Container Board: {node.text}
             </div>
           )}
 
           {/* Attached details icons row */}
-          <div className="flex flex-wrap gap-1 items-center justify-center mb-0.5 pointer-events-none">
+          <div className="flex flex-wrap gap-1 items-center justify-center mb-0.5">
             {node.icon && <span className="text-[11px] font-medium leading-none shrink-0">{node.icon}</span>}
             {node.priority && node.priority !== 'none' && (
               <span className={`text-[8px] uppercase tracking-wider font-extrabold px-1.5 py-0.2 rounded-full leading-none shrink-0 ${
@@ -329,15 +332,15 @@ export default React.memo(function Node({
 
           {/* Main Node Text label */}
           {!isBlock && (
-            <span className={`text-xs select-none block w-full truncate text-center break-words font-semibold max-w-[145px] leading-relaxed ${
-              node.type === 'root' ? 'text-sm font-extrabold' : ''
+            <span className={`text-[10px] select-none block w-full truncate text-center break-words font-semibold max-w-full leading-relaxed text-slate-800 ${
+              node.type === 'root' ? 'text-[11px] font-extrabold' : ''
             }`}>
               {node.text}
             </span>
           )}
 
           {isBlock && (
-            <p className="text-[11px] leading-relaxed text-slate-500/90 select-none italic max-w-full overflow-hidden mt-1 cursor-text select-all">
+            <p className="text-[10px] leading-relaxed text-slate-500/90 select-none italic max-w-full overflow-hidden mt-1 cursor-text pointer-events-auto">
               {node.notes || "Double-click block title/body to edit contents or drag other notes/images inside."}
             </p>
           )}

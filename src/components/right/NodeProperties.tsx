@@ -41,6 +41,28 @@ const SIMPLE_ICONS = [
   '📄', '🎥', '📱', '💻', '📲', '📺', '👥', '🧑‍🎓', '🧑‍🏫', '🧍‍♂️', '👧', '📁', '📝', '📊'
 ];
 
+const AccordionSection = ({ title, children, actions, isExpanded, onToggle }: { title: string, children: React.ReactNode, actions?: React.ReactNode, isExpanded: boolean, onToggle: () => void }) => {
+  return (
+    <div className="flex flex-col border-b border-slate-200 last:border-0 bg-[#f3f4f6]">
+      <div 
+        className="flex items-center justify-between px-2 py-2 cursor-pointer hover:bg-slate-200 transition-colors"
+        onClick={onToggle}
+      >
+        <div className="flex items-center gap-1.5 text-slate-800">
+          {isExpanded ? <ChevronDown size={14} className="text-slate-600" /> : <ChevronRight size={14} className="text-slate-600" />}
+          <span className="text-xs font-semibold select-none">{title}</span>
+        </div>
+        {actions && <div onClick={e => e.stopPropagation()}>{actions}</div>}
+      </div>
+      {isExpanded && (
+        <div className="px-3 pb-3 bg-[#f3f4f6]">
+          {children}
+        </div>
+      )}
+    </div>
+  );
+};
+
 export default function NodePropertiesPanel({
   selectedNode,
   onUpdateNode,
@@ -188,48 +210,28 @@ export default function NodePropertiesPanel({
     });
   };
 
-  const AccordionSection = ({ title, children, actions }: { title: string, children: React.ReactNode, actions?: React.ReactNode }) => {
-    const isExpanded = expanded[title];
-    return (
-      <div className="flex flex-col border-b border-slate-200 last:border-0 bg-[#f3f4f6]">
-        <div 
-          className="flex items-center justify-between px-2 py-2 cursor-pointer hover:bg-slate-200 transition-colors"
-          onClick={() => toggle(title)}
-        >
-          <div className="flex items-center gap-1.5 text-slate-800">
-            {isExpanded ? <ChevronDown size={14} className="text-slate-600" /> : <ChevronRight size={14} className="text-slate-600" />}
-            <span className="text-xs font-semibold select-none">{title}</span>
-          </div>
-          {actions && <div onClick={e => e.stopPropagation()}>{actions}</div>}
-        </div>
-        {isExpanded && (
-          <div className="px-3 pb-3 bg-[#f3f4f6]">
-            {children}
-          </div>
-        )}
-      </div>
-    );
-  };
+
 
   return (
     <div id="inspector_panel" className="flex flex-col select-none bg-[#f3f4f6] h-full overflow-y-auto pb-8 relative">
       
-      {/* Absolute Close Button overlaying the top */}
-      {onClose && (
-        <div className="absolute top-2 right-2 z-10">
+      {/* Header */}
+      <div className="flex items-center justify-between px-3 py-2 border-b border-slate-200 bg-white shrink-0 shadow-sm z-20 sticky top-0">
+        <span className="font-bold text-sm text-slate-700">Node Properties</span>
+        {onClose && (
           <button 
             onClick={onClose}
-            className="p-1.5 hover:bg-slate-200 text-slate-400 hover:text-slate-700 rounded-md transition-colors"
+            className="p-1.5 hover:bg-slate-100 text-slate-400 hover:text-slate-700 rounded-md transition-colors"
             title="Close panel"
           >
             <X size={16} />
           </button>
-        </div>
-      )}
+        )}
+      </div>
 
       <div className="flex flex-col shrink-0 mt-2">
         {/* Node Identity Display */}
-        <AccordionSection title="Identity & Content">
+        <AccordionSection title="Identity & Content" isExpanded={expanded['Identity & Content']} onToggle={() => toggle('Identity & Content')}>
           <div className="flex flex-col gap-1.5 mt-1">
             <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest flex justify-between">
               <span>Node ID</span>
@@ -249,7 +251,7 @@ export default function NodePropertiesPanel({
         </AccordionSection>
         
         {/* Style & Shape */}
-        <AccordionSection title="Style & Shape">
+        <AccordionSection title="Style & Shape" isExpanded={expanded['Style & Shape']} onToggle={() => toggle('Style & Shape')}>
           <div className="grid grid-cols-2 gap-1.5 pt-1">
             {COMPACT_SHAPES.map((shape) => (
               <button
@@ -268,7 +270,7 @@ export default function NodePropertiesPanel({
         </AccordionSection>
 
         {/* Colors */}
-        <AccordionSection title="Colors">
+        <AccordionSection title="Colors" isExpanded={expanded['Colors']} onToggle={() => toggle('Colors')}>
           <div className="grid grid-cols-3 gap-1.5 pt-1">
             {COMPACT_PALETTES.map((color, idx) => {
               const isSelected = selectedNode.color?.background === color.background && selectedNode.color?.text === color.text;
@@ -296,7 +298,7 @@ export default function NodePropertiesPanel({
         </AccordionSection>
 
         {/* Badges & Status */}
-        <AccordionSection title="Badges & Status">
+        <AccordionSection title="Badges & Status" isExpanded={expanded['Badges & Status']} onToggle={() => toggle('Badges & Status')}>
           <div className="flex flex-col gap-3 pt-1">
             <div className="flex flex-wrap gap-1.5">
               {SIMPLE_ICONS.map((emojiSym) => {
@@ -368,7 +370,7 @@ export default function NodePropertiesPanel({
         </AccordionSection>
 
         {/* Layout */}
-        <AccordionSection title="Layout">
+        <AccordionSection title="Layout" isExpanded={expanded['Layout']} onToggle={() => toggle('Layout')}>
           <div className="flex flex-col gap-3 pt-1">
             <div className="grid grid-cols-2 gap-1.5">
               {[
@@ -426,7 +428,7 @@ export default function NodePropertiesPanel({
         </AccordionSection>
 
         {/* Notes & Details */}
-        <AccordionSection title="Notes & Details">
+        <AccordionSection title="Notes & Details" isExpanded={expanded['Notes & Details']} onToggle={() => toggle('Notes & Details')}>
           <div className="flex flex-col gap-3 pt-1">
             <div className="relative">
               <Link size={13} className="absolute left-2.5 top-2 text-slate-400" />
