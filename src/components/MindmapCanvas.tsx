@@ -142,6 +142,44 @@ export default function MindmapCanvas({
     };
   }, [selectedNodeId, mapData, editingNodeId]);
 
+  // Track latest state for non-passive event listeners without stale closures
+  const stateRef = useRef({ panX, panY, zoom });
+  useEffect(() => {
+    stateRef.current = { panX, panY, zoom };
+  }, [panX, panY, zoom]);
+
+  // Non-passive wheel listener to prevent default browser zooming (trackpad pinch)
+  useEffect(() => {
+    const el = canvasRef.current;
+    if (!el) return;
+    const handleNativeWheel = (e: WheelEvent) => {
+      e.preventDefault(); // Stop native page scrolling/zooming
+
+      const { panX, panY, zoom } = stateRef.current;
+      
+      if (e.ctrlKey || e.metaKey) {
+        const zoomFactor = e.deltaY > 0 ? 0.9 : 1.1;
+        const newZoom = Math.max(0.1, Math.min(3, zoom * zoomFactor));
+        
+        const rect = el.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+        
+        const unzoomedX = (mouseX - panX) / zoom;
+        const unzoomedY = (mouseY - panY) / zoom;
+        
+        setPanX(mouseX - unzoomedX * newZoom);
+        setPanY(mouseY - unzoomedY * newZoom);
+        setZoom(newZoom);
+      } else {
+        setPanX(prev => prev - e.deltaX);
+        setPanY(prev => prev - e.deltaY);
+      }
+    };
+    el.addEventListener('wheel', handleNativeWheel, { passive: false });
+    return () => el.removeEventListener('wheel', handleNativeWheel);
+  }, []);
+
   // Tree Traversal Navigation helper
   const navigateTree = (direction: string) => {
     if (!selectedNodeId) return;
@@ -176,9 +214,8 @@ export default function MindmapCanvas({
     if (bestCandidateId) {
       onSelectNode(bestCandidateId);
     }
-  };
-
   // Pan Canvas Mouse Event Helpers
+
   const handleCanvasMouseDown = (e: React.MouseEvent) => {
     // Only pan if clicking empty canvas or holding spacebar/middle click
     const target = e.target as HTMLElement;

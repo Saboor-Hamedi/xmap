@@ -403,14 +403,10 @@ export default function App() {
     const newType = parent.type === 'root' ? 'main' : 'sub';
 
     const newNode: MindMapNode = {
+      ...parent,
       id: newId,
-      text: '',
       parentId,
       type: newType,
-      shape: 'underline',
-      color: parent.type === 'root' 
-        ? { background: '#f8fafc', border: '#cbd5e1', text: '#0f172a' }
-        : undefined
     };
 
     if (mapData.layoutDirection === 'freeform' && direction) {
@@ -456,12 +452,9 @@ export default function App() {
     const parentId = referenceNode.parentId;
 
     const newNode: MindMapNode = {
+      ...referenceNode,
       id: newId,
-      text: '',
       parentId,
-      type: referenceNode.type,
-      shape: referenceNode.shape,
-      color: referenceNode.color
     };
 
     if (mapData.layoutDirection === 'freeform' && direction) {
