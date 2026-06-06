@@ -45,6 +45,7 @@ interface NodeProps {
   onAddChild: (e: React.MouseEvent, id: string, direction?: 'top'|'bottom'|'left'|'right') => void;
   onAddSibling: (id: string, direction?: 'top'|'bottom'|'left'|'right') => void;
   onStartRelationshipSetup: (id: string) => void;
+  onStartLinkDrag: (id: string, e: React.MouseEvent) => void;
   onDeleteNode: (id: string) => void;
   onSelectNode: (id: string | null) => void;
   onUpdateNode?: (id: string, updates: Partial<MindMapNode>) => void;
@@ -69,6 +70,7 @@ export default React.memo(function Node({
   onAddChild,
   onAddSibling,
   onStartRelationshipSetup,
+  onStartLinkDrag,
   onDeleteNode,
   onSelectNode,
   onUpdateNode
@@ -80,8 +82,8 @@ export default React.memo(function Node({
   let text = node.color?.text || '#0f172a';     // slate-900
 
   if (node.type === 'root' && !node.color) {
-    background = '#1e293b';
-    border = '#0f172a';
+    background = '#3b4fd4';
+    border = '#2d3fba';
     text = '#ffffff';
   }
 
@@ -108,14 +110,14 @@ export default React.memo(function Node({
   const displayHeight = localSize?.h ?? height;
 
   // Generate CSS properties based on the exact shape
-  let shapeClasses = 'rounded-md shadow-sm border-[1.5px]'; // Eraser base look
+  let shapeClasses = 'rounded-lg shadow border-[1.5px]'; // Clean default
   let clipPath = undefined;
   
   const shape = node.shape || 'rounded';
   
-  if (shape === 'rect') shapeClasses = 'rounded-none shadow-sm border-[1.5px]';
-  if (shape === 'circle') shapeClasses = 'rounded-full h-12 w-12 flex items-center justify-center shadow-sm border-[1.5px]';
-  if (shape === 'ellipse') shapeClasses = 'rounded-[60%] shadow-sm border-[1.5px] px-5';
+  if (shape === 'rect') shapeClasses = 'rounded-none shadow border-[1.5px]';
+  if (shape === 'circle') shapeClasses = 'rounded-full h-12 w-12 flex items-center justify-center shadow border-[1.5px]';
+  if (shape === 'ellipse') shapeClasses = 'rounded-[60%] shadow border-[1.5px] px-5';
   if (shape === 'underline') shapeClasses = 'border-b-[2px] rounded-none border-t-0 border-l-0 border-r-0 bg-transparent shadow-none';
   if (shape === 'borderless' || isLabel) shapeClasses = 'border-none shadow-none bg-transparent';
   if (isBlock) shapeClasses = 'rounded-xl border-[1.5px] border-slate-300 bg-slate-50/50 items-start justify-start p-4 shadow-sm';
@@ -208,6 +210,21 @@ export default React.memo(function Node({
         </button>
       </div>
 
+      {/* Center Link Knob — drag to connect nodes */}
+      <div
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-auto z-30"
+        title="Drag to link nodes"
+        onMouseDown={(e) => {
+          e.stopPropagation();
+          e.preventDefault();
+          onStartLinkDrag(id, e);
+        }}
+      >
+        <div className="w-4 h-4 bg-white border-2 border-[#29b6f2] rounded-full shadow-md hover:scale-125 transition-transform cursor-crosshair flex items-center justify-center">
+          <div className="w-1.5 h-1.5 bg-[#29b6f2] rounded-full" />
+        </div>
+      </div>
+
       {/* Clip-Path inner background provider */}
       {clipPath && (
         <div 
@@ -277,18 +294,6 @@ export default React.memo(function Node({
 
       {/* Foreground Container */}
       <div className="relative z-10 w-full h-full flex flex-col justify-center">
-      {/* Relationship setting indicator overlay */}
-      {relFromNodeId && relFromNodeId !== id && (
-        <div 
-          onClick={(e) => {
-            e.stopPropagation();
-            onCompleteRelationshipSetup(id);
-          }}
-          className="absolute inset-0 bg-pink-500/25 cursor-pointer flex items-center justify-center animate-pulse rounded border border-pink-500"
-        >
-          <span className="text-[9px] text-white font-extrabold uppercase font-mono px-1 bg-pink-600 rounded">Link Dest</span>
-        </div>
-      )}
 
       {/* Editing / Writing Mode Input */}
       {isEditing ? (

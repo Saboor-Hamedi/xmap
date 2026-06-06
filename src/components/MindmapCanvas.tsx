@@ -71,6 +71,11 @@ export default function MindmapCanvas({
   const [nodeOffsetOnDragStart, setNodeOffsetOnDragStart] = useState({ x: 0, y: 0 });
   const [nodeAbsoluteOnDragStart, setNodeAbsoluteOnDragStart] = useState({ x: 0, y: 0 });
   const [liveDragOffset, setLiveDragOffset] = useState({ dx: 0, dy: 0 });
+
+  // Drag-to-link state
+  const [linkingFromId, setLinkingFromId] = useState<string | null>(null);
+  const [linkCursorPos, setLinkCursorPos] = useState<{ x: number; y: number } | null>(null);
+  const [linkHoverNodeId, setLinkHoverNodeId] = useState<string | null>(null);
   
   const panTransformRef = useRef({ x: panX, y: panY });
 
@@ -236,24 +241,42 @@ export default function MindmapCanvas({
       const newX = e.clientX - panStart.x;
       const newY = e.clientY - panStart.y;
       panTransformRef.current = { x: newX, y: newY };
-      
-      // Update DOM transform directly for 0ms lag panning!
       const el = document.getElementById('canvas_transform_layer');
       if (el) el.style.transform = `translate(${newX}px, ${newY}px) scale(${zoom})`;
     } else if (draggingNodeId) {
-      // Calculate absolute dragging movement from drag start
       const zoomLevel = zoom || 1;
       const dx = (e.clientX - dragStartPos.x) / zoomLevel;
       const dy = (e.clientY - dragStartPos.y) / zoomLevel;
-      
       setLiveDragOffset({ dx, dy });
+    } else if (linkingFromId && canvasRef.current) {
+      // Update ghost line cursor position in canvas space
+      const rect = canvasRef.current.getBoundingClientRect();
+      const cx = (e.clientX - rect.left - panX) / zoom;
+      const cy = (e.clientY - rect.top - panY) / zoom;
+      setLinkCursorPos({ x: cx, y: cy });
+
+      // Detect if hovering over a node
+      const el = document.elementFromPoint(e.clientX, e.clientY);
+      const nodeEl = el?.closest('.mindmap-node') as HTMLElement | null;
+      const hovId = nodeEl?.id?.replace('node_', '') ?? null;
+      setLinkHoverNodeId(hovId && hovId !== linkingFromId ? hovId : null);
     }
   };
 
-  const handleCanvasMouseUp = () => {
+  const handleCanvasMouseUp = (e?: React.MouseEvent) => {
     if (isPanning) {
       setPanX(panTransformRef.current.x);
       setPanY(panTransformRef.current.y);
+    }
+
+    // Finalize drag-to-link
+    if (linkingFromId) {
+      if (linkHoverNodeId && linkHoverNodeId !== linkingFromId) {
+        onAddRelationship(linkingFromId, linkHoverNodeId, 'Connection');
+      }
+      setLinkingFromId(null);
+      setLinkCursorPos(null);
+      setLinkHoverNodeId(null);
     }
 
     if (draggingNodeId) {
@@ -359,14 +382,27 @@ export default function MindmapCanvas({
     setAiCustomPrompt('');
   };
 
-  // Trigger floating node connections
+  // Drag-to-link knob handler
+  const handleStartLinkDrag = (nodeId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    if (!canvasRef.current) return;
+    const rect = canvasRef.current.getBoundingClientRect();
+    const cx = (e.clientX - rect.left - panX) / zoom;
+    const cy = (e.clientY - rect.top - panY) / zoom;
+    setLinkingFromId(nodeId);
+    setLinkCursorPos({ x: cx, y: cy });
+    setLinkHoverNodeId(null);
+  };
+
+  // Trigger floating node connections (legacy fallback)
   const handleStartRelationshipSetup = (nodeId: string) => {
     setRelFromNodeId(nodeId);
   };
 
   const handleCompleteRelationshipSetup = (targetNodeId: string) => {
     if (relFromNodeId && relFromNodeId !== targetNodeId) {
-      onAddRelationship(relFromNodeId, targetNodeId, "Direct connection");
+      onAddRelationship(relFromNodeId, targetNodeId, 'Direct connection');
       setRelFromNodeId(null);
     }
   };
@@ -420,8 +456,8 @@ export default function MindmapCanvas({
       onDragEnter={handleDragEnter}
       onDragOver={handleDragOver}
       onDrop={handleDrop}
-      className={`relative flex-1 h-full bg-[#f9f9f9] overflow-hidden cursor-grab select-none ${
-        isPanning ? 'cursor-grabbing' : ''
+      className={`relative flex-1 h-full bg-[#f9f9f9] overflow-hidden select-none ${
+        linkingFromId ? 'cursor-crosshair' : isPanning ? 'cursor-grabbing' : 'cursor-grab'
       }`}
     >
       {/* Infinite Grid Background dots - matching draw.io */}
@@ -451,6 +487,50 @@ export default function MindmapCanvas({
           draggingNodeId={null}
           dragOffsetRef={{ current: { dx: 0, dy: 0 } }}
         />
+
+        {/* Ghost link line - follows cursor during drag-to-link */}
+        {linkingFromId && linkCursorPos && computedPositions[linkingFromId] && (() => {
+          const srcPos = computedPositions[linkingFromId];
+          return (
+            <svg className="absolute inset-0 overflow-visible pointer-events-none" style={{ width: '1px', height: '1px', zIndex: 100 }}>
+              <defs>
+                <marker id="ghost_arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                  <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#29b6f2" />
+                </marker>
+              </defs>
+              {/* Soft glow halo */}
+              <line
+                x1={srcPos.x} y1={srcPos.y}
+                x2={linkCursorPos.x} y2={linkCursorPos.y}
+                stroke="#29b6f2"
+                strokeWidth={6}
+                strokeOpacity={0.15}
+                strokeLinecap="round"
+              />
+              {/* Main ghost line */}
+              <line
+                x1={srcPos.x} y1={srcPos.y}
+                x2={linkCursorPos.x} y2={linkCursorPos.y}
+                stroke={linkHoverNodeId ? '#22d3ee' : '#29b6f2'}
+                strokeWidth={2}
+                strokeDasharray="6 3"
+                strokeLinecap="round"
+                markerEnd="url(#ghost_arrow)"
+              />
+              {/* Source dot */}
+              <circle cx={srcPos.x} cy={srcPos.y} r={5} fill="#29b6f2" />
+              {/* Target snap indicator */}
+              {linkHoverNodeId && computedPositions[linkHoverNodeId] && (
+                <circle
+                  cx={computedPositions[linkHoverNodeId].x}
+                  cy={computedPositions[linkHoverNodeId].y}
+                  r={8} fill="none" stroke="#22d3ee" strokeWidth={2.5}
+                  className="animate-ping"
+                />
+              )}
+            </svg>
+          );
+        })()}
 
         {/* DOM Mind-Map nodes overlays */}
         {Object.keys(mapData.nodes).map((id) => {
@@ -484,6 +564,7 @@ export default function MindmapCanvas({
               onAddChild={handleAddChildButton}
               onAddSibling={onAddSibling}
               onStartRelationshipSetup={handleStartRelationshipSetup}
+              onStartLinkDrag={handleStartLinkDrag}
               onDeleteNode={onDeleteNode}
               onSelectNode={onSelectNode}
             />
