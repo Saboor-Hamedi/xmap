@@ -1,6 +1,29 @@
 import React from 'react';
 import { MindMapNode } from '../types';
 import { PositionedNode } from '../utils/layout';
+
+const EMOJI_SHAPES: Record<string, string> = {
+  pdf: '📄',
+  video: '🎥',
+  phone: '📱',
+  computer: '💻',
+  iphone: '📱',
+  samsung: '📲',
+  ipad: '📱',
+  tv: '📺',
+  users: '👥',
+  student: '🧑‍🎓',
+  teacher: '🧑‍🏫',
+  body: '🧍‍♂️',
+  girl: '👧',
+  file: '📁',
+  docx: '📝',
+  docs: '📑',
+  excel: '📊',
+  car: '🚗',
+  laptop: '💻'
+};
+
 import { Link2, Plus, CornerRightDown, ArrowRight, Trash2 } from 'lucide-react';
 
 interface NodeProps {
@@ -117,7 +140,9 @@ export default React.memo(function Node({
 
   // For complex shapes, we use an absolute SVG background instead of borders
   const usesSvgBackground = ['cylinder', 'cloud', 'document', 'folder', 'note', 'actor', 'browser', 'callout', 'card'].includes(shape);
-  if (usesSvgBackground) {
+  const isEmojiShape = !!EMOJI_SHAPES[shape];
+
+  if (usesSvgBackground || isEmojiShape) {
     shapeClasses = 'border-0 shadow-none bg-transparent pt-3 pb-3 px-4';
   }
 
@@ -138,10 +163,10 @@ export default React.memo(function Node({
       style={{
         left: pos.x,
         top: pos.y,
-        width: displayWidth ?? (usesSvgBackground || clipPath ? '180px' : '155px'),
+        width: displayWidth ?? (usesSvgBackground || clipPath || isEmojiShape ? '180px' : '155px'),
         height: displayHeight ?? undefined,
-        backgroundColor: clipPath || usesSvgBackground ? 'transparent' : finalBgColor,
-        borderColor: clipPath || usesSvgBackground ? 'transparent' : finalBorderColor,
+        backgroundColor: clipPath || usesSvgBackground || isEmojiShape ? 'transparent' : finalBgColor,
+        borderColor: clipPath || usesSvgBackground || isEmojiShape ? 'transparent' : finalBorderColor,
         color: text,
         cursor: isDragging ? 'grabbing' : 'grab',
         zIndex: isBlock ? 1 : (isSelected ? 20 : 10)
@@ -240,6 +265,13 @@ export default React.memo(function Node({
         </svg>
       )}
 
+      {/* Emoji Background Provider */}
+      {isEmojiShape && (
+        <div className="absolute inset-0 flex items-center justify-center text-[5rem] pointer-events-none opacity-90 drop-shadow-md select-none">
+          {EMOJI_SHAPES[shape]}
+        </div>
+      )}
+
       {/* Foreground Container */}
       <div className="relative z-10 w-full h-full flex flex-col justify-center">
       {/* Relationship setting indicator overlay */}
@@ -313,21 +345,24 @@ export default React.memo(function Node({
       )}
       </div>
 
-      {/* Resize Handle */}
-      {isSelected && onUpdateNode && (
+      {/* Resizer Handle */}
+      {isSelected && !isEditing && (
         <div 
-          className="absolute bottom-0 right-0 w-4 h-4 cursor-se-resize flex items-end justify-end p-0.5 group/resize z-50"
+          className="absolute -right-2 -bottom-2 w-5 h-5 cursor-se-resize bg-blue-500 border-[2.5px] border-white rounded-full z-50 pointer-events-auto shadow-md"
           onMouseDown={(e) => {
             e.stopPropagation();
-            const startW = displayWidth ?? document.getElementById(`node_${id}`)?.offsetWidth ?? 155;
-            const startH = displayHeight ?? document.getElementById(`node_${id}`)?.offsetHeight ?? 40;
+            const el = document.getElementById(`node_${id}`);
+            const startW = displayWidth ?? el?.offsetWidth ?? 155;
+            const startH = displayHeight ?? el?.offsetHeight ?? 40;
+            
+            // Calculate effective zoom scale
+            const zoomLevel = el ? el.getBoundingClientRect().width / el.offsetWidth : 1;
             
             startPosRef.current = { x: e.clientX, y: e.clientY, w: startW as number, h: startH as number };
             setLocalSize({ w: startW as number, h: startH as number });
 
             const handleMouseMove = (moveEvt: MouseEvent) => {
               if (startPosRef.current) {
-                const zoomLevel = 1;
                 const dx = (moveEvt.clientX - startPosRef.current.x) / zoomLevel;
                 const dy = (moveEvt.clientY - startPosRef.current.y) / zoomLevel;
                 setLocalSize({
@@ -342,23 +377,21 @@ export default React.memo(function Node({
               window.removeEventListener('mouseup', handleMouseUp);
               
               if (startPosRef.current) {
-                const zoomLevel = 1;
                 const dx = (upEvt.clientX - startPosRef.current.x) / zoomLevel;
                 const dy = (upEvt.clientY - startPosRef.current.y) / zoomLevel;
                 const finalW = Math.max(50, startPosRef.current.w + dx);
                 const finalH = Math.max(30, startPosRef.current.h + dy);
                 setLocalSize(null);
                 startPosRef.current = null;
-                onUpdateNode(id, { width: finalW, height: finalH });
+                onUpdateNode?.(id, { width: finalW, height: finalH });
               }
             };
 
             window.addEventListener('mousemove', handleMouseMove);
             window.addEventListener('mouseup', handleMouseUp);
           }}
-        >
-          <div className="w-2.5 h-2.5 border-r-[2.5px] border-b-[2.5px] border-blue-500 rounded-br-sm opacity-50 group-hover/resize:opacity-100" />
-        </div>
+          title="Resize Node"
+        />
       )}
     </div>
   );

@@ -214,6 +214,8 @@ export default function MindmapCanvas({
     if (bestCandidateId) {
       onSelectNode(bestCandidateId);
     }
+  };
+
   // Pan Canvas Mouse Event Helpers
 
   const handleCanvasMouseDown = (e: React.MouseEvent) => {

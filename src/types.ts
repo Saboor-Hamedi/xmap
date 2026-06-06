@@ -9,7 +9,8 @@ export type NodeShape =
   | 'rect' | 'rounded' | 'circle' | 'ellipse' | 'diamond' | 'hexagon' 
   | 'triangle' | 'parallelogram' | 'cylinder' | 'cloud' | 'document' 
   | 'folder' | 'note' | 'actor' | 'browser' | 'callout' | 'card' 
-  | 'block' | 'label' | 'underline' | 'borderless';
+  | 'block' | 'label' | 'underline' | 'borderless'
+  | 'pdf' | 'video' | 'phone' | 'computer' | 'iphone' | 'samsung' | 'ipad' | 'tv' | 'users' | 'student' | 'teacher' | 'body' | 'girl' | 'file' | 'docx' | 'excel' | 'docs' | 'car' | 'laptop';
 
 export interface NodeColor {
   background: string;

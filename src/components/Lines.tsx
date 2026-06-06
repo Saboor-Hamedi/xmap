@@ -181,16 +181,6 @@ export default function Lines({
               stroke="#a855f7" 
               strokeWidth={2} 
             />
-            <text 
-              x={rightmostX + 22} 
-              y={braceMidY + 4} 
-              fill="#7e22ce" 
-              fontSize={11} 
-              fontFamily="monospace"
-              className="font-bold select-none group-hover/sum:underline bg-white"
-            >
-              {sum.text}
-            </text>
           </g>
         );
       })}
@@ -218,27 +208,6 @@ export default function Lines({
               markerEnd="url(#arrow)"
               className="cursor-pointer hover:stroke-rose-600 transition-colors pointer-events-auto"
             />
-            
-            {/* Floating link label overlay */}
-            <rect 
-              x={midX - 45} 
-              y={midY - 8} 
-              width={90} 
-              height={16} 
-              rx={3} 
-              fill="#fbcfe8" 
-              className="fill-rose-100 fill-opacity-95 stroke-pink-300 opacity-90 stroke group-hover/rel:opacity-100" 
-            />
-            <text 
-              x={midX} 
-              y={midY + 3} 
-              textAnchor="middle" 
-              fill="#be185d" 
-              fontSize={9} 
-              className="font-bold shrink-0 font-mono select-none"
-            >
-              {rel.text || "Connection"}
-            </text>
             
             {/* Micro deletion trigger button */}
             <circle 

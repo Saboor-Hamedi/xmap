@@ -3,6 +3,28 @@ import { Palette, RefreshCw, Undo2, Redo2, DownloadCloud, FileText, ChevronDown,
 import { MindMapData, NodeShape } from '../../types';
 import { calculateNodePositions } from '../../utils/layout';
 
+const EMOJI_SHAPES: Record<string, string> = {
+  pdf: '📄',
+  video: '🎥',
+  phone: '📱',
+  computer: '💻',
+  iphone: '📱',
+  samsung: '📲',
+  ipad: '📱',
+  tv: '📺',
+  users: '👥',
+  student: '🧑‍🎓',
+  teacher: '🧑‍🏫',
+  body: '🧍‍♂️',
+  girl: '👧',
+  file: '📁',
+  docx: '📝',
+  docs: '📑',
+  excel: '📊',
+  car: '🚗',
+  laptop: '💻'
+};
+
 const SHAPE_CATEGORIES = [
   {
     name: 'General',
@@ -32,6 +54,30 @@ const SHAPE_CATEGORIES = [
       { type: 'block', label: 'Region' },
       { type: 'label', label: 'Text Tag' },
       { type: 'underline', label: 'Underline' }
+    ] as { type: NodeShape, label: string }[]
+  },
+  {
+    name: 'Media & Devices',
+    shapes: [
+      { type: 'pdf', label: 'PDF' },
+      { type: 'video', label: 'Video' },
+      { type: 'phone', label: 'Phone' },
+      { type: 'computer', label: 'Computer' },
+      { type: 'iphone', label: 'iPhone' },
+      { type: 'samsung', label: 'Samsung' },
+      { type: 'ipad', label: 'iPad' },
+      { type: 'tv', label: 'TV' },
+      { type: 'users', label: 'Users' },
+      { type: 'student', label: 'Student' },
+      { type: 'teacher', label: 'Teacher' },
+      { type: 'body', label: 'Body' },
+      { type: 'girl', label: 'Girl' },
+      { type: 'file', label: 'File' },
+      { type: 'docx', label: 'Word Doc' },
+      { type: 'docs', label: 'Docs' },
+      { type: 'excel', label: 'Excel' },
+      { type: 'car', label: 'Car' },
+      { type: 'laptop', label: 'Laptop' }
     ] as { type: NodeShape, label: string }[]
   }
 ];
@@ -104,6 +150,9 @@ export default function MapPropertiesPanel({
 
   // Helper to render the mini SVG
   const renderMiniShape = (type: NodeShape) => {
+    if (EMOJI_SHAPES[type as string]) {
+      return <div className="text-xl leading-none flex items-center justify-center pointer-events-none select-none">{EMOJI_SHAPES[type as string]}</div>;
+    }
     return (
       <div className="w-8 h-8 flex items-center justify-center text-slate-700 pointer-events-none">
         {type === 'rect' && <div className="w-6 h-5 border-[1.5px] border-current rounded-sm" />}
@@ -131,10 +180,23 @@ export default function MapPropertiesPanel({
   };
 
   return (
-    <div id="map_properties_panel" className="flex flex-col select-none bg-[#f3f4f6] h-full overflow-y-auto">
+    <div id="map_properties_panel" className="flex flex-col select-none bg-[#f3f4f6] h-full overflow-y-auto relative pb-8">
       
+      {/* Absolute Close Button overlaying the top */}
+      {onClose && (
+        <div className="absolute top-2 right-2 z-10">
+          <button 
+            onClick={onClose}
+            className="p-1.5 hover:bg-slate-200 text-slate-400 hover:text-slate-700 rounded-md transition-colors"
+            title="Close panel"
+          >
+            <X size={16} />
+          </button>
+        </div>
+      )}
+
       {/* Search Bar mimic */}
-      <div className="p-3 bg-[#f3f4f6] pb-2">
+      <div className="p-3 bg-[#f3f4f6] pb-2 mt-2">
         <div className="bg-white border border-slate-300 rounded-full px-3 py-1.5 flex items-center text-slate-400">
           <input 
             type="text" 
