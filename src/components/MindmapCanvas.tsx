@@ -484,6 +484,7 @@ export default function MindmapCanvas({
           mapData={mapData}
           positionedNodes={computedPositions}
           onDeleteRelationship={onDeleteRelationship}
+          onDeleteNode={onDeleteNode}
           draggingNodeId={null}
           dragOffsetRef={{ current: { dx: 0, dy: 0 } }}
         />
