@@ -122,21 +122,26 @@ export default function LeftSidebar({
   };
 
   return (
-    <div id="sidebar_container" className="absolute md:relative inset-y-0 left-0 w-72 md:w-80 h-full bg-white border-r border-slate-200 text-slate-800 flex flex-col select-none shadow-2xl md:shadow-none z-50 animate-in slide-in-from-left duration-205">
-      {/* Vault Picker Header */}
+    <div id="sidebar_container" className="absolute md:relative inset-y-0 left-0 w-72 md:w-80 h-full bg-[#f3f4f6] border-r border-slate-200 text-slate-800 flex flex-col select-none shadow-2xl md:shadow-none z-50 animate-in slide-in-from-left duration-205">
+      
+      {/* Header matching RightProperties */}
+      <div className="flex items-center justify-between px-3 py-2 border-b border-slate-200 bg-white shrink-0 shadow-sm z-20 sticky top-0">
+        <span className="font-bold text-sm text-slate-700">Left Sidebar</span>
+        {onClose && (
+          <button 
+            onClick={onClose}
+            className="p-1.5 hover:bg-slate-100 text-slate-400 hover:text-slate-700 rounded-md transition-colors"
+            title="Close panel"
+          >
+            <X size={16} />
+          </button>
+        )}
+      </div>
+
+      <div className="flex flex-col overflow-y-auto pb-8 relative">
+      {/* Vault Picker Section */}
       <div id="vault_picker_header" className="p-4 border-b border-slate-200 flex flex-col gap-3">
-        <div className="flex justify-between items-center">
-          <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Active Vault Sandbox</label>
-          {onClose && (
-            <button 
-              onClick={onClose}
-              className="md:hidden p-1 hover:bg-slate-50 text-slate-500 hover:text-slate-800 rounded-md transition-colors"
-              title="Close panel"
-            >
-              <X size={15} />
-            </button>
-          )}
-        </div>
+        <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Active Vault Sandbox</label>
         <div className="flex gap-2 items-center">
           <select 
             id="vault_select"
@@ -344,6 +349,7 @@ export default function LeftSidebar({
             Double-click a node to edit. Use <span className="font-mono text-slate-800 bg-slate-50 px-1 py-0.5 rounded">Tab</span> to expand child topics. Changes save instantly!
           </div>
         </div>
+      </div>
       </div>
     </div>
   );
