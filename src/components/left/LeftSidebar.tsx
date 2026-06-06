@@ -122,15 +122,15 @@ export default function LeftSidebar({
   };
 
   return (
-    <div id="sidebar_container" className="absolute md:relative inset-y-0 left-0 w-72 md:w-80 h-full bg-slate-900 border-r border-slate-800 text-slate-300 flex flex-col select-none shadow-2xl md:shadow-none z-50 animate-in slide-in-from-left duration-205">
+    <div id="sidebar_container" className="absolute md:relative inset-y-0 left-0 w-72 md:w-80 h-full bg-white border-r border-slate-200 text-slate-800 flex flex-col select-none shadow-2xl md:shadow-none z-50 animate-in slide-in-from-left duration-205">
       {/* Vault Picker Header */}
-      <div id="vault_picker_header" className="p-4 border-b border-slate-800 flex flex-col gap-3">
+      <div id="vault_picker_header" className="p-4 border-b border-slate-200 flex flex-col gap-3">
         <div className="flex justify-between items-center">
           <label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Active Vault Sandbox</label>
           {onClose && (
             <button 
               onClick={onClose}
-              className="md:hidden p-1 hover:bg-slate-800 text-slate-400 hover:text-white rounded-md transition-colors"
+              className="md:hidden p-1 hover:bg-slate-50 text-slate-500 hover:text-slate-800 rounded-md transition-colors"
               title="Close panel"
             >
               <X size={15} />
@@ -145,7 +145,7 @@ export default function LeftSidebar({
               const selected = vaults.find((v) => v.id === e.target.value);
               if (selected) onSelectVault(selected);
             }}
-            className="flex-1 bg-slate-800 border border-slate-700 text-white rounded-md px-3 py-1.5 text-sm focus:outline-none focus:border-blue-500"
+            className="flex-1 bg-slate-50 border border-slate-200 text-slate-800 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:border-blue-500"
           >
             {vaults.map((vault) => (
               <option key={vault.id} value={vault.id}>
@@ -157,7 +157,7 @@ export default function LeftSidebar({
             id="btn_add_vault"
             onClick={() => setShowNewVault(!showNewVault)}
             title="Create Virtual Vault"
-            className="p-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-md text-slate-400 hover:text-white transition-colors"
+            className="p-1.5 bg-slate-50 hover:bg-slate-700 border border-slate-200 rounded-md text-slate-500 hover:text-slate-800 transition-colors"
           >
             <FolderPlus size={16} />
           </button>
@@ -165,19 +165,19 @@ export default function LeftSidebar({
 
         {/* Create Virtual Vault Field */}
         {showNewVault && (
-          <div id="new_vault_form" className="bg-slate-950 p-3 rounded-md border border-slate-800 flex flex-col gap-2 mt-1">
-            <span className="text-xs text-slate-400">Add a Virtual Cloud Vault:</span>
+          <div id="new_vault_form" className="bg-white p-3 rounded-md border border-slate-200 flex flex-col gap-2 mt-1">
+            <span className="text-xs text-slate-500">Add a Virtual Cloud Vault:</span>
             <div className="flex gap-2">
               <input 
                 type="text"
                 placeholder="Vault Name..."
                 value={newVaultName}
                 onChange={(e) => setNewVaultName(e.target.value)}
-                className="flex-1 bg-slate-800 text-xs text-white border border-slate-700 rounded px-2 py-1 outline-none"
+                className="flex-1 bg-slate-50 text-xs text-slate-800 border border-slate-200 rounded px-2 py-1 outline-none"
               />
               <button 
                 onClick={handleCreateVault}
-                className="bg-blue-600 hover:bg-blue-500 text-white text-xs px-2.5 py-1 rounded font-medium"
+                className="bg-blue-600 hover:bg-blue-500 text-slate-800 text-xs px-2.5 py-1 rounded font-medium"
               >
                 Add
               </button>
@@ -189,7 +189,7 @@ export default function LeftSidebar({
         <button
           id="btn_select_native_vault"
           onClick={onSelectNativeDirectory}
-          className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-blue-700 to-indigo-700 hover:from-blue-600 hover:to-indigo-600 text-white font-medium text-xs py-2 px-3 rounded-md shadow-md transition-all group duration-200"
+          className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-blue-700 to-indigo-700 hover:from-blue-600 hover:to-indigo-600 text-slate-800 font-medium text-xs py-2 px-3 rounded-md shadow-md transition-all group duration-200"
         >
           <Folder size={14} className="group-hover:scale-110 transition-transform" />
           Open Computer Folder as Vault
@@ -198,14 +198,14 @@ export default function LeftSidebar({
         {/* Status indicator */}
         <div className="flex items-center gap-1.5 px-1 py-0.5 mt-1">
           <div className={`h-2 w-2 rounded-full ${activeVault.type === 'native' ? 'bg-emerald-500 animate-pulse' : 'bg-blue-400'}`}></div>
-          <span className="text-[11px] text-slate-400 font-medium font-mono">
+          <span className="text-[11px] text-slate-500 font-medium font-mono">
             {activeVault.type === 'native' ? 'Local Drive Sync (Obsidian Mode)' : 'Sandbox Storage (In-Browser)'}
           </span>
         </div>
       </div>
 
       {/* Global Mind Map Nodes Search */}
-      <div id="sidebar_search_container" className="p-4 border-b border-slate-800">
+      <div id="sidebar_search_container" className="p-4 border-b border-slate-200">
         <label className="text-xs font-semibold uppercase tracking-wider text-slate-500 block mb-2">Vault Search</label>
         <div className="relative">
           <Search size={14} className="absolute left-3 top-2.5 text-slate-500" />
@@ -214,18 +214,18 @@ export default function LeftSidebar({
             placeholder="Search words across all maps..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-slate-800 border border-slate-700 focus:border-blue-500 rounded-md pl-9 pr-3 py-1.5 text-xs text-white placeholder-slate-500 outline-none"
+            className="w-full bg-slate-50 border border-slate-200 focus:border-blue-500 rounded-md pl-9 pr-3 py-1.5 text-xs text-slate-800 placeholder-slate-500 outline-none"
           />
         </div>
         
         {/* Real-time search result listing */}
         {searchResults.length > 0 && (
-          <div id="search_results_bubble" className="mt-2 text-xs bg-slate-950 p-2 rounded-md border border-slate-800 max-h-40 overflow-y-auto divide-y divide-slate-900">
+          <div id="search_results_bubble" className="mt-2 text-xs bg-white p-2 rounded-md border border-slate-200 max-h-40 overflow-y-auto divide-y divide-slate-900">
             <span className="text-[10px] text-slate-500 uppercase tracking-widest font-semibold block pb-1">Found ({searchResults.length}) matches:</span>
             {searchResults.map((res, i) => (
               <div 
                 key={i} 
-                className="py-1 cursor-pointer hover:bg-slate-900 flex items-center justify-between text-slate-300"
+                className="py-1 cursor-pointer hover:bg-white flex items-center justify-between text-slate-800"
                 onClick={() => {
                   onSelectFile(res.fileName);
                   // Global key binding should highlight this node on canvas. We pass coordinates or node selectors
@@ -266,12 +266,12 @@ export default function LeftSidebar({
             placeholder="New map name (e.g. Brainstorm)..."
             value={newFileName}
             onChange={(e) => setNewFileName(e.target.value)}
-            className="flex-1 bg-slate-800 text-xs text-white border border-slate-700 rounded-md px-2.5 py-1.5 focus:border-blue-500 outline-none placeholder-slate-500"
+            className="flex-1 bg-slate-50 text-xs text-slate-800 border border-slate-200 rounded-md px-2.5 py-1.5 focus:border-blue-500 outline-none placeholder-slate-500"
           />
           <button 
             type="submit"
             title="Create New Map file"
-            className="p-1 px-2.5 bg-blue-700 hover:bg-blue-600 hover:text-white border border-blue-800 rounded-md text-white font-medium text-xs transition-colors"
+            className="p-1 px-2.5 bg-blue-700 hover:bg-blue-600 hover:text-slate-800 border border-blue-800 rounded-md text-slate-800 font-medium text-xs transition-colors"
           >
             <Plus size={16} />
           </button>
@@ -280,7 +280,7 @@ export default function LeftSidebar({
         {/* Existing Vault Files Tree / List */}
         <div id="vault_files_list" className="flex flex-col gap-1.5 mt-1">
           {files.length === 0 ? (
-            <div className="py-8 text-center bg-slate-950/20 rounded-md border border-dashed border-slate-800 text-slate-600 text-xs">
+            <div className="py-8 text-center bg-white/20 rounded-md border border-dashed border-slate-200 text-slate-600 text-xs">
               No .json files found. Add one above!
             </div>
           ) : (
@@ -291,8 +291,8 @@ export default function LeftSidebar({
                   key={file.path} 
                   className={`group flex justify-between items-center px-3 py-2 rounded-md border cursor-pointer select-none transition-all duration-150 ${
                     worksAsActive 
-                      ? 'bg-slate-800 border-indigo-500/50 text-white shadow' 
-                      : 'bg-slate-950/40 border-slate-800/80 hover:bg-slate-800/60 hover:text-white text-slate-400'
+                      ? 'bg-slate-50 border-indigo-500/50 text-slate-800 shadow' 
+                      : 'bg-white/40 border-slate-200/80 hover:bg-slate-50/60 hover:text-slate-800 text-slate-500'
                   }`}
                   onClick={() => onSelectFile(file.name)}
                 >
@@ -310,7 +310,7 @@ export default function LeftSidebar({
                       }
                     }}
                     title="Delete File"
-                    className="opacity-0 group-hover:opacity-100 p-1 text-slate-500 hover:text-red-400 hover:bg-slate-900 rounded-md transition-all"
+                    className="opacity-0 group-hover:opacity-100 p-1 text-slate-500 hover:text-red-400 hover:bg-white rounded-md transition-all"
                   >
                     <Trash2 size={12} />
                   </button>
@@ -322,7 +322,7 @@ export default function LeftSidebar({
       </div>
 
       {/* Footer System Integrations & import trigger */}
-      <div id="sidebar_footer" className="p-4 border-t border-slate-800 bg-slate-950/60 flex flex-col gap-3 text-xs">
+      <div id="sidebar_footer" className="p-4 border-t border-slate-200 bg-white/60 flex flex-col gap-3 text-xs">
         <div className="flex justify-between items-center">
           <span className="text-slate-500 font-semibold uppercase tracking-wider text-[10px]">Import Map</span>
           <label className="flex items-center gap-1 text-[11px] underline text-blue-400 hover:text-blue-300 cursor-pointer">
@@ -337,11 +337,11 @@ export default function LeftSidebar({
         </div>
 
         {/* Tutorial Banner */}
-        <div className="bg-slate-900/60 p-3 rounded-lg border border-slate-800 text-[11px] text-slate-400 leading-relaxed flex gap-2">
+        <div className="bg-white/60 p-3 rounded-lg border border-slate-200 text-[11px] text-slate-500 leading-relaxed flex gap-2">
           <Info size={14} className="text-blue-400 shrink-0 mt-0.5" />
           <div>
-            <span className="text-white font-medium block mb-0.5">XMind Obsidian Experience:</span>
-            Double-click a node to edit. Use <span className="font-mono text-white bg-slate-800 px-1 py-0.5 rounded">Tab</span> to expand child topics. Changes save instantly!
+            <span className="text-slate-800 font-medium block mb-0.5">XMind Obsidian Experience:</span>
+            Double-click a node to edit. Use <span className="font-mono text-slate-800 bg-slate-50 px-1 py-0.5 rounded">Tab</span> to expand child topics. Changes save instantly!
           </div>
         </div>
       </div>

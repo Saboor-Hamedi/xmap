@@ -66,9 +66,19 @@ export default function Lines({
         const endPos = getActivePos(id, positionedNodes[id]);
         if (!startPos || !endPos) return null;
 
-        // Compute actual box exit points dynamically
-        const halfBoxW = 75;
-        const halfBoxH = 18;
+        // Use DOM elements for exact dimensions if available, fallback to fixed logical estimates
+        const parentEl = document.getElementById(`node_${node.parentId}`);
+        const childEl = document.getElementById(`node_${id}`);
+
+        const parentW = mapData.nodes[node.parentId]?.width || (parentEl ? parentEl.offsetWidth : 155);
+        const parentH = mapData.nodes[node.parentId]?.height || (parentEl ? parentEl.offsetHeight : 36);
+        const childW = node.width || (childEl ? childEl.offsetWidth : 155);
+        const childH = node.height || (childEl ? childEl.offsetHeight : 36);
+
+        const halfParentW = parentW / 2;
+        const halfParentH = parentH / 2;
+        const halfChildW = childW / 2;
+        const halfChildH = childH / 2;
 
         let parentX = startPos.x;
         let parentY = startPos.y;
@@ -78,45 +88,36 @@ export default function Lines({
         let pathString = '';
         const lineStyle = node.connectionLineType || 'curve';
 
+        const dx = childX - parentX;
+        const dy = childY - parentY;
+        const absDx = Math.abs(dx);
+        const absDy = Math.abs(dy);
+
+        // Calculate Ray-AABB intersection to find exact edge points so lines don't snap/magnet
+        // Add a slight padding (4px) so arrows don't clip into borders
+        const pad = 4;
+        const ratioP = Math.min((halfParentW + pad) / Math.max(0.001, absDx), (halfParentH + pad) / Math.max(0.001, absDy));
+        const ratioC = Math.min((halfChildW + pad) / Math.max(0.001, absDx), (halfChildH + pad) / Math.max(0.001, absDy));
+
+        // If nodes overlap, ratios might be > 1. Clamp to 1.
+        const clampP = Math.min(1, ratioP);
+        const clampC = Math.min(1, ratioC);
+
+        const edgePX = parentX + dx * clampP;
+        const edgePY = parentY + dy * clampP;
+        const edgeCX = childX - dx * clampC;
+        const edgeCY = childY - dy * clampC;
+
         if (lineStyle === 'line' || lineStyle === 'dot' || lineStyle === 'arrow') {
-          if (mapData.layoutDirection === 'vertical') {
-            parentY += halfBoxH;
-            childY -= halfBoxH;
-          } else {
-            if (endPos.x >= startPos.x) {
-              parentX += halfBoxW;
-              childX -= halfBoxW;
-            } else {
-              parentX -= halfBoxW;
-              childX += halfBoxW;
-            }
-          }
-          pathString = `M ${parentX} ${parentY} L ${childX} ${childY}`;
+          pathString = `M ${edgePX} ${edgePY} L ${edgeCX} ${edgeCY}`;
         } else {
           // curve style
           if (mapData.layoutDirection === 'vertical') {
-            // Vertically downwards: Parent exits bottom, child enters top
-            parentY += halfBoxH;
-            childY -= halfBoxH;
-            
-            // Draw rounded right-angle or curved curve
-            const dy = childY - parentY;
-            pathString = `M ${parentX} ${parentY} C ${parentX} ${parentY + dy*0.4}, ${childX} ${childY - dy*0.4}, ${childX} ${childY}`;
+            // Bezier curve flowing downwards
+            pathString = `M ${edgePX} ${edgePY} C ${edgePX} ${edgePY + dy*0.4}, ${edgeCX} ${edgeCY - dy*0.4}, ${edgeCX} ${edgeCY}`;
           } else {
-            // Horizontal or balanced layouts
-            if (endPos.x >= startPos.x) {
-              // Symmetrical Right-spreading connector
-              parentX += halfBoxW;
-              childX -= halfBoxW;
-              const dx = childX - parentX;
-              pathString = `M ${parentX} ${parentY} C ${parentX + dx*0.45} ${parentY}, ${parentX + dx*0.55} ${childY}, ${childX} ${childY}`;
-            } else {
-              // Symmetrical Left-spreading connector
-              parentX -= halfBoxW;
-              childX += halfBoxW;
-              const dx = childX - parentX;
-              pathString = `M ${parentX} ${parentY} C ${parentX + dx*0.45} ${parentY}, ${parentX + dx*0.55} ${childY}, ${childX} ${childY}`;
-            }
+            // Horizontal Bezier curve flowing sideways
+            pathString = `M ${edgePX} ${edgePY} C ${edgePX + dx*0.45} ${edgePY}, ${edgeCX - dx*0.45} ${edgeCY}, ${edgeCX} ${edgeCY}`;
           }
         }
 

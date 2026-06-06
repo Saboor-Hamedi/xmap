@@ -24,6 +24,7 @@ interface NodeProps {
   onStartRelationshipSetup: (id: string) => void;
   onDeleteNode: (id: string) => void;
   onSelectNode: (id: string | null) => void;
+  onUpdateNode?: (id: string, updates: Partial<MindMapNode>) => void;
 }
 
 export default React.memo(function Node({
@@ -46,7 +47,8 @@ export default React.memo(function Node({
   onAddSibling,
   onStartRelationshipSetup,
   onDeleteNode,
-  onSelectNode
+  onSelectNode,
+  onUpdateNode
 }: NodeProps) {
   
   // Default Eraser.io aesthetics
@@ -66,6 +68,10 @@ export default React.memo(function Node({
   let width = node.width;
   let height = node.height;
 
+  // Local state for live resizing
+  const [localSize, setLocalSize] = React.useState<{ w: number, h: number } | null>(null);
+  const startPosRef = React.useRef<{ x: number, y: number, w: number, h: number } | null>(null);
+
   if (isBlock) {
     width = node.width ?? 350;
     height = node.height ?? 250;
@@ -73,6 +79,10 @@ export default React.memo(function Node({
     width = node.width ?? 160;
     height = node.height ?? 40;
   }
+
+  // Use local size if currently resizing
+  const displayWidth = localSize?.w ?? width;
+  const displayHeight = localSize?.h ?? height;
 
   // Generate CSS properties based on the exact shape
   let shapeClasses = 'rounded-md shadow-sm border-[1.5px]'; // Eraser base look
@@ -128,8 +138,8 @@ export default React.memo(function Node({
       style={{
         left: pos.x,
         top: pos.y,
-        width: width ?? (usesSvgBackground || clipPath ? '180px' : '155px'),
-        height: height ?? undefined,
+        width: displayWidth ?? (usesSvgBackground || clipPath ? '180px' : '155px'),
+        height: displayHeight ?? undefined,
         backgroundColor: clipPath || usesSvgBackground ? 'transparent' : finalBgColor,
         borderColor: clipPath || usesSvgBackground ? 'transparent' : finalBorderColor,
         color: text,
@@ -299,11 +309,57 @@ export default React.memo(function Node({
               {node.notes || "Double-click block title/body to edit contents or drag other notes/images inside."}
             </p>
           )}
-
-
         </div>
       )}
       </div>
+
+      {/* Resize Handle */}
+      {isSelected && onUpdateNode && (
+        <div 
+          className="absolute bottom-0 right-0 w-4 h-4 cursor-se-resize flex items-end justify-end p-0.5 group/resize z-50"
+          onMouseDown={(e) => {
+            e.stopPropagation();
+            const startW = displayWidth ?? document.getElementById(`node_${id}`)?.offsetWidth ?? 155;
+            const startH = displayHeight ?? document.getElementById(`node_${id}`)?.offsetHeight ?? 40;
+            
+            startPosRef.current = { x: e.clientX, y: e.clientY, w: startW as number, h: startH as number };
+            setLocalSize({ w: startW as number, h: startH as number });
+
+            const handleMouseMove = (moveEvt: MouseEvent) => {
+              if (startPosRef.current) {
+                const zoomLevel = 1;
+                const dx = (moveEvt.clientX - startPosRef.current.x) / zoomLevel;
+                const dy = (moveEvt.clientY - startPosRef.current.y) / zoomLevel;
+                setLocalSize({
+                  w: Math.max(50, startPosRef.current.w + dx),
+                  h: Math.max(30, startPosRef.current.h + dy)
+                });
+              }
+            };
+
+            const handleMouseUp = (upEvt: MouseEvent) => {
+              window.removeEventListener('mousemove', handleMouseMove);
+              window.removeEventListener('mouseup', handleMouseUp);
+              
+              if (startPosRef.current) {
+                const zoomLevel = 1;
+                const dx = (upEvt.clientX - startPosRef.current.x) / zoomLevel;
+                const dy = (upEvt.clientY - startPosRef.current.y) / zoomLevel;
+                const finalW = Math.max(50, startPosRef.current.w + dx);
+                const finalH = Math.max(30, startPosRef.current.h + dy);
+                setLocalSize(null);
+                startPosRef.current = null;
+                onUpdateNode(id, { width: finalW, height: finalH });
+              }
+            };
+
+            window.addEventListener('mousemove', handleMouseMove);
+            window.addEventListener('mouseup', handleMouseUp);
+          }}
+        >
+          <div className="w-2.5 h-2.5 border-r-[2.5px] border-b-[2.5px] border-blue-500 rounded-br-sm opacity-50 group-hover/resize:opacity-100" />
+        </div>
+      )}
     </div>
   );
 });

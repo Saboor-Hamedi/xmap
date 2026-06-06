@@ -438,6 +438,7 @@ export default function MindmapCanvas({
                 setEditingNodeId(id);
                 setEditInputValue(node.text);
               }}
+              onUpdateNode={onUpdateNode}
               onInlineEditBlur={handleInlineEditBlur}
               onInlineEditKeyDown={handleInlineEditKeyDown}
               onCompleteRelationshipSetup={handleCompleteRelationshipSetup}

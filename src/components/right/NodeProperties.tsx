@@ -37,7 +37,8 @@ const COMPACT_SHAPES: { value: NodeShape; label: string }[] = [
 ];
 
 const SIMPLE_ICONS = [
-  '⭐', '🎯', '🔥', '💡', '📌', '🚀', '📈', '⚠️', '✅', '❤️', '📅', '💬', '🛠️', '🔒'
+  '⭐', '🎯', '🔥', '💡', '📌', '🚀', '📈', '⚠️', '✅', '❤️', '📅', '💬', '🛠️', '🔒',
+  '📄', '🎥', '📱', '💻', '📲', '📺', '👥', '🧑‍🎓', '🧑‍🏫', '🧍‍♂️', '👧', '📁', '📝', '📊'
 ];
 
 export default function NodePropertiesPanel({
@@ -51,6 +52,7 @@ export default function NodePropertiesPanel({
   const [notePreviewMode, setNotePreviewMode] = useState(false);
   
   const [expanded, setExpanded] = useState<Record<string, boolean>>({
+    'Identity & Content': true,
     'Style & Shape': true,
     'Colors': false,
     'Badges & Status': false,
@@ -210,36 +212,41 @@ export default function NodePropertiesPanel({
   };
 
   return (
-    <div id="inspector_panel" className="flex flex-col select-none bg-[#f3f4f6] h-full overflow-y-auto pb-8">
+    <div id="inspector_panel" className="flex flex-col select-none bg-[#f3f4f6] h-full overflow-y-auto pb-8 relative">
       
-      {/* Node Identity Display */}
-      <div className="p-3 bg-blue-50/50 border-b border-slate-200 flex flex-col gap-1.5 relative">
-        {onClose && (
+      {/* Absolute Close Button overlaying the top */}
+      {onClose && (
+        <div className="absolute top-2 right-2 z-10">
           <button 
             onClick={onClose}
-            className="absolute top-2 right-2 p-1.5 hover:bg-blue-100 text-blue-400 hover:text-blue-700 rounded-md transition-colors z-10"
+            className="p-1.5 hover:bg-slate-200 text-slate-400 hover:text-slate-700 rounded-md transition-colors"
             title="Close panel"
           >
             <X size={16} />
           </button>
-        )}
-        <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest flex justify-between pr-6">
-          <span>Selected Node</span>
-          <span className="font-mono text-slate-400">ID: {selectedNode.id}</span>
-        </label>
-        <div className="relative">
-          <Type size={14} className="absolute left-3 top-2 text-slate-400" />
-          <input 
-            type="text" 
-            value={selectedNode.text}
-            onChange={handleTextChange}
-            placeholder="Edit text..."
-            className="w-full bg-white border border-slate-300 focus:border-blue-500 rounded px-8 py-1.5 text-xs text-slate-800 font-semibold focus:shadow-sm outline-none"
-          />
         </div>
-      </div>
+      )}
 
-      <div className="flex flex-col shrink-0">
+      <div className="flex flex-col shrink-0 mt-2">
+        {/* Node Identity Display */}
+        <AccordionSection title="Identity & Content">
+          <div className="flex flex-col gap-1.5 mt-1">
+            <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest flex justify-between">
+              <span>Node ID</span>
+              <span className="font-mono text-slate-400">{selectedNode.id}</span>
+            </label>
+            <div className="relative">
+              <Type size={14} className="absolute left-3 top-2 text-slate-400" />
+              <input 
+                type="text" 
+                value={selectedNode.text}
+                onChange={handleTextChange}
+                placeholder="Edit text..."
+                className="w-full bg-white border border-slate-300 focus:border-blue-500 rounded px-8 py-1.5 text-xs text-slate-800 font-semibold focus:shadow-sm outline-none"
+              />
+            </div>
+          </div>
+        </AccordionSection>
         
         {/* Style & Shape */}
         <AccordionSection title="Style & Shape">
