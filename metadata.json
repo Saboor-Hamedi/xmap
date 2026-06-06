@@ -1,0 +1,6 @@
+{
+  "name": "XMind Vault",
+  "description": "An advanced, local-first mind mapping application with infinite canvas, AI-powered brainstorming, and local-folder sync similar to an Obsidian vault.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
